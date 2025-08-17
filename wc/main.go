@@ -8,6 +8,30 @@ import (
 )
 
 func main() {
+	countBytes, countLines := getFlags()
+
+	file, fileInfo, err := getFileAndInfo()
+	if err != nil {
+		fmt.Printf("%s", err.Error())
+		return
+	}
+
+	bytes := fileInfo.Size()
+	output := file.Name()
+
+	if countBytes {
+		output = fmt.Sprintf("%d %s", bytes, output)
+	}
+
+	if countLines {
+		nrOfLines := countLinesInFile(file)
+		output = fmt.Sprintf("%d %s", nrOfLines, output)
+	}
+
+	fmt.Println(output)
+}
+
+func getFlags() (bool, bool) {
 	var countBytes bool
 	var countLines bool
 
@@ -22,47 +46,40 @@ func main() {
 		countLines = true
 	}
 
+	return countBytes, countLines
+}
+
+func getFileAndInfo() (*os.File, os.FileInfo, error) {
 	filename := flag.Arg(0)
 	if filename == "" {
-		fmt.Printf("Missing filename.\n")
-		return
+		return nil, nil, fmt.Errorf("Missing filename.\n")
 	}
 
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Printf(
+		return nil, nil, fmt.Errorf(
 			"Unable to open file '%s' for reading. Does it exist?",
 			filename,
 		)
-		return
 	}
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		fmt.Printf(
+		return nil, nil, fmt.Errorf(
 			"Unable to query fileinfo for file '%s'.",
 			filename,
 		)
-		return
 	}
 
-	bytes := fileInfo.Size()
+	return file, fileInfo, nil
+}
 
-	output := filename
-
-	if countBytes {
-		output = fmt.Sprintf("%d %s", bytes, output)
-	}
-
+func countLinesInFile(file *os.File) int {
 	nrOfLines := 0
-	if countLines {
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			nrOfLines++
-		}
-
-		output = fmt.Sprintf("%d %s", nrOfLines, output)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		nrOfLines++
 	}
 
-	fmt.Println(output)
+	return nrOfLines
 }
