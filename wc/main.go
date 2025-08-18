@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"unicode"
 )
 
 func main() {
@@ -97,8 +98,20 @@ func countWordsInFile(file *os.File) int {
 	nrOfWords := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		chars := strings.Split(scanner.Text(), " ")
-		nrOfWords += len(chars)
+		line := strings.TrimSpace(scanner.Text())
+		tokens := []rune(line)
+		inWord := false
+		for _, token := range tokens {
+			if (unicode.IsLetter(token) || unicode.IsDigit(token)) && !inWord {
+				inWord = true
+				continue
+			}
+
+			if !(unicode.IsLetter(token) || unicode.IsDigit(token)) && inWord {
+				nrOfWords++
+				inWord = false
+			}
+		}
 	}
 
 	return nrOfWords
