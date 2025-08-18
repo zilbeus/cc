@@ -112,6 +112,10 @@ func countWordsInFile(file *os.File) int {
 				inWord = false
 			}
 		}
+
+		if inWord {
+			nrOfWords++
+		}
 	}
 
 	return nrOfWords
