@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	countBytes, countLines, countWords := getFlags()
+	countBytes, countLines, countWords, countChars := getFlags()
 
 	file, fileInfo, err := getFileAndInfo()
 	if err != nil {
@@ -35,28 +35,35 @@ func main() {
 		output = fmt.Sprintf("%d %s", nrOfLines, output)
 	}
 
+	if countChars {
+		nrOfChars := countCharsInFile(file)
+		output = fmt.Sprintf("%d %s", nrOfChars, output)
+	}
+
 	fmt.Println(output)
 }
 
-func getFlags() (bool, bool, bool) {
+func getFlags() (bool, bool, bool, bool) {
 	var countBytes bool
 	var countLines bool
 	var countWords bool
+	var countChars bool
 
 	flag.BoolVar(&countBytes, "c", false, "count number of bytes in file")
 	flag.BoolVar(&countLines, "l", false, "count number of lines in file")
 	flag.BoolVar(&countWords, "w", false, "count number of words in file")
+	flag.BoolVar(&countChars, "m", false, "count number of chars in file")
 
 	flag.Parse()
 
-	noFlagsSet := !countBytes && !countLines && !countWords
+	noFlagsSet := !countBytes && !countLines && !countWords && !countChars
 	if noFlagsSet {
 		countBytes = true
 		countLines = true
 		countWords = true
 	}
 
-	return countBytes, countLines, countWords
+	return countBytes, countLines, countWords, countChars
 }
 
 func getFileAndInfo() (*os.File, os.FileInfo, error) {
@@ -119,4 +126,16 @@ func countWordsInFile(file *os.File) int {
 	}
 
 	return nrOfWords
+}
+
+func countCharsInFile(file *os.File) int {
+	nrOfChars := 0
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		tokens := []rune(line)
+		nrOfChars += len(tokens)
+	}
+
+	return nrOfChars
 }
