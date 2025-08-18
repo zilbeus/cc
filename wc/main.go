@@ -102,12 +102,12 @@ func countWordsInFile(file *os.File) int {
 		tokens := []rune(line)
 		inWord := false
 		for _, token := range tokens {
-			if (unicode.IsLetter(token)) && !inWord {
+			if !unicode.IsSpace(token) && !inWord {
 				inWord = true
 				continue
 			}
 
-			if !(unicode.IsLetter(token)) && inWord {
+			if unicode.IsSpace(token) && inWord {
 				nrOfWords++
 				inWord = false
 			}
